@@ -32,6 +32,14 @@ param(
 $ErrorActionPreference = "Stop"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+# Разделитель тысяч задаем явно и не полагаемся на локаль.
+# На linux-раннере GitHub культура инвариантная, и формат N0 подставляет запятую:
+# "512,440" читается как "512 целых 440" — ровно наоборот. Ставим неразрывный пробел.
+$Культура = [System.Globalization.CultureInfo]::InvariantCulture.Clone()
+$Культура.NumberFormat.NumberGroupSeparator   = [string][char]0x00A0
+$Культура.NumberFormat.NumberDecimalSeparator = ","
+[System.Threading.Thread]::CurrentThread.CurrentCulture = $Культура
+
 #Область Пути
 
 $ПутьСкрипта  = $PSScriptRoot
