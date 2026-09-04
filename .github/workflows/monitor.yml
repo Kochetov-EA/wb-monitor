@@ -1,0 +1,41 @@
+name: WB Монитор цен
+
+on:
+  schedule:
+    # каждый час в 07 минут; время UTC. GitHub может задержать запуск на 10-15 минут
+    - cron: '7 * * * *'
+  workflow_dispatch:        # кнопка «Run workflow» для ручного прогона
+
+permissions:
+  contents: write           # нужно, чтобы коммитить обновленную историю цен
+
+concurrency:
+  group: wb-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Получить репозиторий
+        uses: actions/checkout@v4
+
+      - name: Проверить цены
+        shell: pwsh
+        env:
+          WB_TELEGRAM_TOKEN: ${{ secrets.WB_TELEGRAM_TOKEN }}
+          WB_TELEGRAM_CHAT: ${{ secrets.WB_TELEGRAM_CHAT }}
+        run: ./WBМонитор.ps1 -БезУведомлений
+
+      - name: Сохранить историю
+        run: |
+          git config user.name  "wb-monitor"
+          git config user.email "wb-monitor@users.noreply.github.com"
+          git add История.csv ПоследняяПроверка.txt
+          if git diff --staged --quiet; then
+            echo "Изменений нет"
+          else
+            git commit -m "Проверка цен $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
