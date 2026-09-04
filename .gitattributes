@@ -1,0 +1,19 @@
+# Переводы строк фиксируем явно: скрипт крутится и на Windows, и на linux-раннере.
+
+* text=auto
+
+# Bash-шаги workflow ломаются от \r, поэтому в репозитории только LF
+*.yml   text eol=lf
+*.yaml  text eol=lf
+.gitignore     text eol=lf
+.gitattributes text eol=lf
+
+# Историю пишет в основном linux-раннер — держим ее в LF, чтобы файл
+# не «менялся целиком» при каждом переключении между машинами
+*.csv text eol=lf
+*.txt text eol=lf
+*.md  text eol=lf
+
+# PowerShell и cmd остаются в CRLF
+*.ps1 text eol=crlf
+*.bat text eol=crlf
