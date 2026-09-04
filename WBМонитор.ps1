@@ -15,13 +15,13 @@
     Запуск:
         powershell -ExecutionPolicy Bypass -File WBМонитор.ps1
         powershell -ExecutionPolicy Bypass -File WBМонитор.ps1 -Валюта rub -КодРегиона -1257786
-        powershell -ExecutionPolicy Bypass -File WBМонитор.ps1 -БезУведомлений
+        powershell -ExecutionPolicy Bypass -File WBМонитор.ps1 -БезВсплывающихОкон
 
     Коды регионов (dest), валюты и разбор итоговой цены — см. README.md
 #>
 
 param(
-    [switch]$БезУведомлений,
+    [switch]$БезВсплывающихОкон,
     [ValidateSet("kzt", "rub", "byn", "uzs", "kgs", "amd", "usd")]
     [string]$Валюта = "kzt",
     [int]$КодРегиона = 269,               # 269 = Актобе; 234 = Алматы; -1257786 = Москва
@@ -69,7 +69,7 @@ function Записать-Лог {
 function Показать-Уведомление {
     param([string]$Заголовок, [string]$Текст)
 
-    if ($БезУведомлений) { return }
+    if ($БезВсплывающихОкон) { return }
     if (-not $ЭтоWindows) { return }
 
     $Получилось = $false

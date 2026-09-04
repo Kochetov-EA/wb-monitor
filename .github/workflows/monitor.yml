@@ -26,7 +26,7 @@ jobs:
         env:
           WB_TELEGRAM_TOKEN: ${{ secrets.WB_TELEGRAM_TOKEN }}
           WB_TELEGRAM_CHAT: ${{ secrets.WB_TELEGRAM_CHAT }}
-        run: ./WBМонитор.ps1 -БезУведомлений
+        run: ./WBМонитор.ps1 -БезВсплывающихОкон
 
       - name: Сохранить историю
         run: |
