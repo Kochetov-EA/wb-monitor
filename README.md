@@ -297,7 +297,7 @@ WB должна программа, и она обязана где-то вып�
 Создать задачу в планировщике Windows (раз в час):
 
 ```powershell
-$Действие = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\Users\y.kochetov\Documents\00_Tools\01_Claude\01_Projects\!_Утилиты\WBМонитор\WBМонитор.ps1"'
+$Действие = New-ScheduledTaskAction -Execute "powershell.exe" -Argument '-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File "C:\Users\y.kochetov\Documents\00_Tools\01_Claude\01_Projects\WBМонитор\WBМонитор.ps1"'
 $Триггер = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Hours 1)
 Register-ScheduledTask -TaskName "WB Монитор цен" -Action $Действие -Trigger $Триггер -Description "Проверка цен Wildberries"
 ```
