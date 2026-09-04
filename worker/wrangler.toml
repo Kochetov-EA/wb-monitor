@@ -1,0 +1,14 @@
+# Конфигурация Worker для развертывания через wrangler.
+# Если разворачиваешь через панель Cloudflare, этот файл не нужен —
+# он лежит здесь, чтобы настройки были видны и повторяемы.
+#
+# Секрет задается отдельно и в этот файл не попадает:
+#   npx wrangler secret put GITHUB_TOKEN
+
+name = "wb-monitor-planner"
+main = "index.js"
+compatibility_date = "2026-09-04"
+
+[triggers]
+# каждые 5 минут. У Cloudflare это настоящее расписание, а не пожелание
+crons = ["*/5 * * * *"]

@@ -173,6 +173,58 @@ remove - убрать артикул: /remove 1422010347
 help - подсказка
 ```
 
+## Планировщик на Cloudflare Workers
+
+**Расписание GitHub Actions здесь не работает.** Проверено фактом: за 87 минут
+с кроном `*/10`, затем `*/5` — ноль прогонов с событием `schedule`, при активном
+workflow. Все прогоны были ручные. Убедиться можно так (публичный репозиторий
+читается без токена):
+
+```powershell
+$r = Invoke-RestMethod "https://api.github.com/repos/Kochetov-EA/wb-monitor/actions/runs?per_page=30" -Headers @{ "User-Agent"="check" }
+$r.workflow_runs | Group-Object event
+```
+
+Поэтому расписание вынесено в Cloudflare Workers — там крон настоящий. Worker
+раз в 5 минут просит GitHub запустить проверку, то есть делает ровно то же, что
+кнопка **Run workflow**. Вся остальная механика не изменилась. Код в `worker/`.
+
+### Настройка, один раз
+
+**1. Токен GitHub.** Settings → Developer settings → Personal access tokens →
+Fine-grained tokens → Generate new token:
+
+| Поле | Значение |
+|---|---|
+| Repository access | Only select repositories → `wb-monitor` |
+| Permissions → Actions | **Read and write** |
+
+Больше ничего не выдавай — этого достаточно, чтобы запускать workflow, и не
+хватит ни на что другое.
+
+**2. Worker.** На dash.cloudflare.com → Workers & Pages → Create → Worker.
+Имя `wb-monitor-planner`, Deploy. Затем Edit code, вставить содержимое
+`worker/index.js`, снова Deploy.
+
+**3. Секрет.** В настройках Worker → Variables and Secrets → Add:
+тип **Secret**, имя `GITHUB_TOKEN`, значение — токен из шага 1.
+
+**4. Расписание.** Настройки Worker → Triggers → Cron Triggers → Add:
+
+```
+*/5 * * * *
+```
+
+### Проверка
+
+Через 5–10 минут посмотри события прогонов той же командой, что выше. Появятся
+новые `workflow_dispatch` — значит Worker дёргает GitHub. Ошибки самого Worker
+видны в его логах на Cloudflare.
+
+Адрес Worker открыт всему интернету, поэтому запуск проверки по HTTP там
+намеренно не сделан: страница отвечает только признаком жизни. Иначе дёргать
+прогоны мог бы любой, кто узнает адрес.
+
 ## Нагрузка на WB и лимиты
 
 - За один прогон уходит **один HTTP-запрос** — все артикулы передаются списком
