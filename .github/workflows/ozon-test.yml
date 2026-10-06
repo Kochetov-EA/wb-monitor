@@ -1,0 +1,64 @@
+name: Ozon проверка доступа
+
+# Разовая проба: пропускает ли Ozon запрос с поддельным TLS-отпечатком Chrome.
+# Запускается пушем probe.py, результат коммитится в ozon-test/result.txt —
+# логи Actions без авторизации не читаются.
+#
+# Коммит результата не перезапустит пробу: события от GITHUB_TOKEN новых
+# прогонов не создают, да и result.txt в фильтр путей не входит.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'ozon-test/probe.py'
+
+permissions:
+  contents: write
+
+# та же группа, что у монитора: иначе их коммиты будут толкаться за ветку
+concurrency:
+  group: wb-monitor
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Получить репозиторий
+        uses: actions/checkout@v5
+
+      - name: Поставить Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Поставить curl_cffi
+        run: pip install curl_cffi
+
+      - name: Проба
+        run: python ozon-test/probe.py
+
+      - name: Сохранить результат
+        run: |
+          git config user.name  "wb-monitor"
+          git config user.email "wb-monitor@users.noreply.github.com"
+          git add ozon-test/result.txt
+
+          if git diff --staged --quiet; then
+            echo "Изменений нет"
+            exit 0
+          fi
+
+          git commit -m "Ozon: результат пробы доступа"
+
+          for attempt in 1 2 3; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push отклонен, подтягиваю изменения (попытка $attempt из 3)"
+            git pull --rebase --autostash
+          done
+
+          exit 1
